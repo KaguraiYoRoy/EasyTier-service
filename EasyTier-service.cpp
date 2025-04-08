@@ -5,6 +5,8 @@
 #include <json/json.h>
 #include <curl/curl.h>
 
+#include "Log.h"
+
 int main()
 {
     std::cout << "Hello World!\n";
