@@ -72,6 +72,9 @@ Log::~Log() {
 	m_lockExit.lock();
 	m_isExit = true;
 	m_lockExit.unlock();
+
+	m_msgQueue.push({ LEVEL_INFO,getTime(),"Exit." });
+
 	if (m_threadMain.joinable())
 		m_threadMain.join();
 }
