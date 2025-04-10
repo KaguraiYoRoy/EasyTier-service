@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="BlockingQueue.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="service.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
