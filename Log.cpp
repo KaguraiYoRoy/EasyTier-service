@@ -45,7 +45,7 @@ void Log::logThread() {
 		}
 		m_lockExit.unlock();
 
-		LogMsg front = m_msgQueue.front();
+		LogMsg front = m_msgQueue.take();
 		if (front.m_LogLevel >= m_levelLog) {
 			m_lockFile.lock();
 			if (m_ofLogFile)

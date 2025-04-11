@@ -20,6 +20,14 @@ public:
         return queue_.front();
     }
 
+    T take() {
+        std::unique_lock<std::mutex> lock(mtx_);
+        cv_.wait(lock, [this] { return !queue_.empty(); });
+        T item = std::move(queue_.front()); // 移动语义避免拷贝
+        queue_.pop();
+        return item;
+    }
+
     // 移除队首元素（需外部调用，非阻塞）
     void pop() {
         std::lock_guard<std::mutex> lock(mtx_);
