@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
 
             break;
         default:
-            service_log.push("Unknown service command", LEVEL_ERROR);
+            service_log.push(LEVEL_ERROR, "Unknown service command");
             return 1;
         }
         break;
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
     case Action::SetParam:
         if (args.instance_id.empty() || args.param_name.empty() || args.param_value.empty()) {
             std::cerr << "Error: " << std::endl;
-            service_log.push("Missing parameters. Required: instance-id, param-name, param-value", LEVEL_ERROR);
+            service_log.push(LEVEL_ERROR, "Missing parameters. Required: instance-id, param-name, param-value");
             return 1;
         }
 
@@ -105,13 +105,13 @@ int main(int argc, char* argv[]) {
 
     case Action::Install:
         if (args.instance_id.empty()) {
-            service_log.push("Instance id is missing. Auto generated.");
             args.instance_id = generate_guid();
+            service_log.push(LEVEL_INFO, "Instance id is missing. Auto generated: %s.", args.instance_id.c_str());
         }
         break;
 
     default:
-        service_log.push("Unknown command or invalid arguments", LEVEL_ERROR);
+        service_log.push(LEVEL_ERROR, "Unknown command or invalid arguments");
         std::cout << clipp::make_man_page(cli, argv[0]) << std::endl;
         return 1;
     }

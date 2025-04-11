@@ -79,8 +79,21 @@ Log::~Log() {
 		m_threadMain.join();
 }
 
-void Log::push(std::string msg, short level) {
-	m_msgQueue.push({level,getTime(),msg});
+void Log::push(short level, const char* msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	const int len = vsnprintf(nullptr, 0, msg, args);
+	va_end(args);
+
+	if (len < 0) return;
+
+	std::vector<char> buf(len + 1);
+
+	va_start(args, msg);
+	vsnprintf(buf.data(), buf.size(), msg, args);
+	va_end(args);
+
+	m_msgQueue.push({level,getTime(),buf.data()});
 }
 
 bool Log::open(std::string filename) {

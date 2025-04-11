@@ -6,6 +6,7 @@
 #include <chrono>
 #include <mutex>
 #include <cstdio>
+#include <cstdarg>
 
 #include "BlockingQueue.h"
 
@@ -36,7 +37,7 @@ private:
 public:
 	Log(short default_loglevel = LEVEL_WARN, short default_printlevel = LEVEL_INFO);
 	~Log();
-	void push(std::string msg, short level = LEVEL_INFO);
+	void push(short level, const char* msg, ...);
 	bool open(std::string filename);
 	bool close();
 };
