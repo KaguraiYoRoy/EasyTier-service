@@ -161,6 +161,8 @@
   <ItemGroup>
     <ClInclude Include="BlockingQueue.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="service-linux.h" />
+    <ClInclude Include="service-windows.h" />
     <ClInclude Include="service.h" />
   </ItemGroup>
   <ItemGroup>

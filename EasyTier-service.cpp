@@ -5,12 +5,18 @@
 #include <curl/curl.h>
 
 #include "clipp.h"
-
-#include "service.h"
 #include "Log.h"
 
+#include "service.h"
+#ifdef _WIN32
+#include "service-windows.h"
+#elif defined(__linux__)
+#include "service-linux.h"
+#endif
+
+Log service_log;
+
 int main(int argc, char* argv[]) {
-    Log service_log;
     CliArgs args;
     ServiceCmd service_cmd;
     std::string service_subcmd;
@@ -57,6 +63,14 @@ int main(int argc, char* argv[]) {
 
     switch (args.action) {
     case Action::Serve:
+
+        register_service();
+
+        while (!exit_requested.load()) {
+
+        }
+        
+        clean_service();
 
         break;
 

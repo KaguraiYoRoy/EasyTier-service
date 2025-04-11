@@ -7,6 +7,9 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <atomic>
+
+std::atomic<bool> exit_requested(false);
 
 enum class Action {
     Serve,
