@@ -38,45 +38,38 @@ std::string Log::level2str(short level, bool character_only)
 
 void Log::logThread() {
 	while (true) {
-		m_lockExit.lock();
-		if (m_isExit) {
-			m_lockExit.unlock();
-			return;
-		}
-		m_lockExit.unlock();
-
-		LogMsg front = m_msgQueue.take();
+		LogMsg front = m_msgQueue.take(); // 阻塞直到有消息
+		// 处理文件写入
 		if (front.m_LogLevel >= m_levelLog) {
-			m_lockFile.lock();
-			if (m_ofLogFile)
-				m_ofLogFile << front.m_strTimestamp << ' ' << level2str(front.m_LogLevel, true) << ": " << front.m_strLogMsg << std::endl;
-			m_lockFile.unlock();
+			std::lock_guard<std::mutex> lock(m_lockFile); // RAII 管理锁
+			if (m_ofLogFile) {
+				m_ofLogFile << front.m_strTimestamp << ' '
+					<< level2str(front.m_LogLevel, true) << ": "
+					<< front.m_strLogMsg << std::endl;
+			}
 		}
-		if (front.m_LogLevel >= m_levelPrint)
-			printf("%s %s: %s\n", front.m_strTimestamp.c_str(), level2str(front.m_LogLevel, true).c_str(), front.m_strLogMsg.c_str());
-		
-		m_msgQueue.pop();
+		// 处理控制台打印
+		if (front.m_LogLevel >= m_levelPrint) {
+			printf("%s %s: %s\n", front.m_strTimestamp.c_str(),
+				level2str(front.m_LogLevel, true).c_str(),
+				front.m_strLogMsg.c_str());
+		}
+		// 检查退出条件：队列为空且标志为真
+		if (m_exit_requested.load() && m_msgQueue.empty()) break;
 	}
 	return;
 }
 
 Log::Log(short default_loglevel, short default_printlevel) {
-	m_levelLog = default_loglevel;
-	m_levelPrint = default_printlevel;
-	m_isExit = false;
-
+	set_level(default_loglevel, default_printlevel);
 	m_threadMain = std::thread(&Log::logThread, this);
 }
 
 Log::~Log() {
-	m_lockExit.lock();
-	m_isExit = true;
-	m_lockExit.unlock();
-
-	m_msgQueue.push({ LEVEL_INFO,getTime(),"Exit." });
-
-	if (m_threadMain.joinable())
-		m_threadMain.join();
+	m_exit_requested.store(true);
+	m_msgQueue.push({ LEVEL_INFO, getTime(), "Exit." }); // 唤醒可能阻塞的线程
+	if (m_threadMain.joinable()) m_threadMain.join();
+	close(); // 确保文件关闭
 }
 
 void Log::push(short level, const char* msg, ...) {
@@ -96,6 +89,12 @@ void Log::push(short level, const char* msg, ...) {
 	m_msgQueue.push({level,getTime(),buf.data()});
 }
 
+void Log::set_level(short loglevel, short printlevel)
+{
+	m_levelLog = loglevel;
+	m_levelPrint = printlevel;
+}
+
 bool Log::open(std::string filename) {
 	m_lockFile.lock();
 	m_ofLogFile.open(filename.c_str(), std::ios::out);
@@ -104,6 +103,8 @@ bool Log::open(std::string filename) {
 }
 
 bool Log::close() {
+	m_lockFile.lock();
 	m_ofLogFile.close();
+	m_lockFile.unlock();
 	return false;
 }
