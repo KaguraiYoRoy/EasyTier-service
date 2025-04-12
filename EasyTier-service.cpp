@@ -5,7 +5,6 @@
 #include <curl/curl.h>
 
 #include "clipp.h"
-#include "Log.h"
 
 #include "service.h"
 #ifdef _WIN32
@@ -14,7 +13,8 @@
 #include "service-linux.h"
 #endif
 
-Log service_log;
+extern BlockingQueue<std::string> m_queueMsg;
+extern Log service_log;
 
 int main(int argc, char* argv[]) {
     CliArgs args;

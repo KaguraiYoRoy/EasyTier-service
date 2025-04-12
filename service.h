@@ -9,6 +9,9 @@
 #include <string>
 #include <atomic>
 
+#include "BlockingQueue.h"
+#include "Log.h"
+
 std::atomic<bool> exit_requested(false);
 
 enum class Action {
@@ -89,3 +92,6 @@ std::string generate_guid() {
 
     return ss.str();
 }
+
+BlockingQueue<std::string> m_queueMsg;
+Log service_log;
